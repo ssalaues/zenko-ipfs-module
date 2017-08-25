@@ -16,6 +16,8 @@ const logOptions = {
     "dumpLevel": "error"
 };
 
+const toStream = require('string-to-stream');
+
 class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
     constructor(dataConfig, logApi) {
         super(dataConfig, logApi);
@@ -58,7 +60,9 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
                 console.log(err);
                 callback(err);
             } else {
-                callback(null, stream);
+                stream.on('data', (file) => {
+                    callback(null, file.content);
+                })
             }
         });
     }
@@ -72,7 +76,7 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
                 callback(err);
             } else {
                 console.log(stats);
-                callback(null, stats.Logs);
+                callback(null, { objectSize: stats.DataSize});
             }
             // Logs:
             // {
