@@ -1,8 +1,6 @@
 'use strict'; // eslint-disable-line strict
 
 const arsenal = require('arsenal');
-const werelogs = require('werelogs');
-
 const errors = arsenal.errors;
 const stringHash = arsenal.stringHash;
 const jsutil = arsenal.jsutil;
@@ -11,6 +9,7 @@ const storageUtils = arsenal.storage.utils;
 const ipfsAPI = require('ipfs-api');
 const ipfs = ipfsAPI('/ip4/127.0.0.1/tcp/5001');
 
+const werelogs = require('werelogs');
 const logger = new werelogs.Logger('Zenko-IPFS');
 const logOptions = {
     "logLevel": "debug",
@@ -18,8 +17,18 @@ const logOptions = {
 };
 
 class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
-    put(dataStream, size, log, callback) {
+    constructor(dataConfig, logApi) {
+        super(dataConfig, logApi);
+        console.log('filestore constructor');
+    }
 
+    setup(cb) {
+        console.log('data setup');
+        cb(null);
+    }
+
+    put(dataStream, size, log, callback) {
+        console.log('data put');
         const files = [
             {
                 path: 'file',
@@ -28,71 +37,43 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
         ];
 
         ipfs.files.add(files, function (err, files) {
+            const cbOnce = jsutil.once(callback);
             if (err) {
                 log.error('error adding to IPFS',
                     { method: 'put', error: err });
-                return callback(errors.InternalError.customizeDescription(
+                cbOnce(errors.InternalError.customizeDescription(
                     `IPFS error: ipfs.files.add() returned ${err.code}`));
+            } else {
+                const key = files[0].hash;
+                cbOnce(null, key);
             }
-            const cbOnce = jsutil.once(callback);
-            const key = files[0].hash;
-            function ok() {
-                log.debug('finished writing data',
-                    { method: 'put', key });
-                return cbOnce(null, key);
-            }
-            return ok();
-            //error management
         });
     }
 
     get(key, byteRange, log, callback) {
-        const filePath = this.getFilePath(key);
-
-        const readStreamOptions = {
-            flags: 'r',
-            encoding: null,
-            fd: null,
-            autoClose: true,
-        };
-        if (byteRange) {
-            readStreamOptions.start = byteRange[0];
-            readStreamOptions.end = byteRange[1];
-        }
-        log.debug('opening readStream to get data',
-                  { method: 'get', key, filePath, byteRange });
-        const cbOnce = jsutil.once(callback);
-        const rs = fs.createReadStream(filePath, readStreamOptions)
-                  .on('error', err => {
-                      if (err.code === 'ENOENT') {
-                          return cbOnce(errors.ObjNotFound);
-                      }
-                      log.error('error retrieving file',
-                                { method: 'get', key, filePath,
-                                  error: err });
-                      return cbOnce(
-                          errors.InternalError.customizeDescription(
-                              `filesystem read error: ${err.code}`));
-                  })
-                  .on('open', () => { cbOnce(null, rs); });
+        console.log('data get');
 
         ipfs.files.get(key, function (err, stream) {
-            stream.on('data', (file) => {
-            // write the file's path and contents to standard out
-                console.log(file.path);
-                file.content.pipe(process.stdout);
-                cbOnce(null, stream);
-            });
+            if (err) {
+                console.log(err);
+                callback(err);
+            } else {
+                callback(null, stream);
+            }
         });
     }
 
     stat(key, log, callback) {
+        console.log('data stat');
 
         ipfs.object.stat(key, (err, stats) => {
             if (err) {
-                throw err
+                console.log(err);
+                callback(err);
+            } else {
+                console.log(stats);
+                callback(null, stats.Logs);
             }
-            console.log(stats)
             // Logs:
             // {
             //   Hash: 'QmPTkMuuL6PD8L2SwTwbcs1NPg14U8mRzerB1ZrrBrkSDD',
@@ -103,22 +84,10 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
             //   CumulativeSize: 10
             // }
         });
+    }
 
-        const filePath = this.getFilePath(key);
-        log.debug('stat file', { key, filePath });
-        fs.stat(filePath, (err, stat) => {
-            if (err) {
-                if (err.code === 'ENOENT') {
-                    return callback(errors.ObjNotFound);
-                }
-                log.error('error on \'stat\' of file',
-                          { key, filePath, error: err });
-                return callback(errors.InternalError.customizeDescription(
-                    `filesystem error: stat() returned ${err.code}`));
-            }
-            const info = { objectSize: stat.size };
-            return callback(null, info);
-        });
+    getDiskUsage(callback) {
+        console.log('data getDiskUsage');
     }
 }
 
