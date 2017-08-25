@@ -16,6 +16,29 @@ const logOptions = {
     "dumpLevel": "error"
 };
 
+function hexEncode(str){
+    var hex, i;
+
+    var result = "";
+    for (i=0; i<str.length; i++) {
+        hex = str.charCodeAt(i).toString(16);
+        result += ("000"+hex).slice(-4);
+    }
+
+    return result;
+}
+
+function hexDecode(hex){
+    var j;
+    var hexes = hex.match(/.{1,4}/g) || [];
+    var back = "";
+    for(j = 0; j<hexes.length; j++) {
+        back += String.fromCharCode(parseInt(hexes[j], 16));
+    }
+
+    return back;
+}
+
 class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
     constructor(dataConfig, logApi) {
         super(dataConfig, logApi);
@@ -44,7 +67,7 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
                 cbOnce(errors.InternalError.customizeDescription(
                     `IPFS error: ipfs.files.add() returned ${err.code}`));
             } else {
-                const key = files[0].hash;
+                const key = hexEncode(files[0].hash);
                 cbOnce(null, key);
             }
         });
@@ -53,7 +76,8 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
     get(key, byteRange, log, callback) {
         console.log('data get');
 
-        ipfs.files.get(key, function (err, stream) {
+        const hash = hexDecode(key);
+        ipfs.files.get(hash, function (err, stream) {
             if (err) {
                 console.log(err);
                 callback(err);
@@ -68,7 +92,8 @@ class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
     stat(key, log, callback) {
         console.log('data stat');
 
-        ipfs.object.stat(key, (err, stats) => {
+        const hash = hexDecode(key);
+        ipfs.object.stat(hash, (err, stats) => {
             if (err) {
                 console.log(err);
                 callback(err);
