@@ -16,8 +16,6 @@ const logOptions = {
     "dumpLevel": "error"
 };
 
-const toStream = require('string-to-stream');
-
 class IPFSFileStore extends arsenal.storage.data.file.DataFileStore {
     constructor(dataConfig, logApi) {
         super(dataConfig, logApi);
