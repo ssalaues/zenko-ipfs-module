@@ -6,7 +6,6 @@ services:
   s3-ipfs-data:
     image: hanuprateek/zenko-ipfs-module
     ports:
-      - "9990"
       - "9991"
     networks:
       - backend
