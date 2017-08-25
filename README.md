@@ -23,7 +23,7 @@ Using the zenko framework and the ipfs module you can push data onto the local i
 
 Clone the Repo:
 
-`git clone https://github.com/jeftekhari/ipfs-zenko.git`
+`git clone https://github.com/ssalaues/zenko-ipfs-module`
 
 Make sure you choose a node to be assigned persistent containers.
 
