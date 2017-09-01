@@ -1,18 +1,18 @@
 'use strict'; // eslint-disable-line strict
-
+//Original Includes
 const arsenal = require('arsenal');
 const errors = arsenal.errors;
 const stringHash = arsenal.stringHash;
 const jsutil = arsenal.jsutil;
 const storageUtils = arsenal.storage.utils;
-
+//IPFS Includes
 const ipfsAPI = require('ipfs-api');
 const ipfs = ipfsAPI('localhost', '5001');
-
+//OrbitDB Includes
 const OrbitDB = require('orbit-db');
 const orbitdb = new OrbitDB(ipfs);
 const SUBLEVEL_SEP = '::';
-
+//Original Includes
 const werelogs = require('werelogs');
 const logger = new werelogs.Logger('Zenko-IPFS');
 const logOptions = {
@@ -20,7 +20,7 @@ const logOptions = {
     "dumpLevel": "error"
 };
 
-// Metadata
+//<==============METADATA================>
 
 const MetadataFileServer =
           require('arsenal').storage.metadata.MetadataFileServer;
@@ -105,8 +105,8 @@ mdServer.initMetadataService = function ()
 
 mdServer.startServer();
 
-// data
-
+//<==============DATA================>
+//IPFS Hash is alphanumeric, Zenko requires a Hexidecimal so we convert it and send it through
 function hexEncode(str){
     var hex, i;
 
@@ -118,7 +118,7 @@ function hexEncode(str){
 
     return result;
 }
-
+//When we get it, it needs to be reverted to alphanumeric.
 function hexDecode(hex){
     var j;
     var hexes = hex.match(/.{1,4}/g) || [];
