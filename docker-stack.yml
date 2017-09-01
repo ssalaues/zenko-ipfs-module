@@ -27,6 +27,10 @@ services:
 
   ipfs:
     image: ipfs/go-ipfs
+    # directories for volumes need to be made for persistence
+    volumes:
+      - /tmp/ipfs_staging:/export
+      - /tmp/ipfs_data:/data/ipfs
     ports:
       - "5001:5001"
       - "4001:4001"
