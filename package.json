@@ -34,6 +34,7 @@
     "arsenal": "scality/Arsenal",
     "ipfs": "^0.25.1",
     "ipfs-api": "^14.1.2",
+    "orbit-db": "^0.17.3",
     "werelogs": "scality/werelogs"
   }
 }

@@ -1,4 +1,4 @@
-FROM node:6
+FROM node:6-slim
 MAINTAINER Hanu Prateek Kunduru <hanu.prateek@gmail.com>
 
 WORKDIR /usr/src/app
@@ -6,15 +6,12 @@ WORKDIR /usr/src/app
 COPY . /usr/src/app
 
 RUN apt-get update \
-    && apt-get install -y jq python git build-essential supervisor --no-install-recommends \
-    && mkdir -p /var/log/supervisor \
+    && apt-get install -y jq python git build-essential --no-install-recommends \
     && npm install --production
-
-COPY supervisord.conf /etc/supervisor/conf.d/supervisord.conf
 
 VOLUME ["/usr/src/app/localData","/usr/src/app/localMetadata"]
 
+CMD [ "npm", "start" ]
+
 EXPOSE 9990
 EXPOSE 9991
-
-CMD [ "/usr/bin/supervisord" ]

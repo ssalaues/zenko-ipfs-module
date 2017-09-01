@@ -19,7 +19,7 @@ services:
 #      DEBUG: socket.io*
     volumes:
       - "s3-ipfs-data:/data:rw"
-    command: /usr/bin/supervisord -c /etc/supervisor/supervisord.conf -n -e DEBUG
+    command: npm start
     deploy:
       placement:
         constraints:
@@ -32,9 +32,17 @@ services:
       - "4001:4001"
       - "8080:8080"
     # command: memcached -l 0.0.0.0 -I 10m
+    volumes:
+      - /tmp/ipfs_staging:/export
+      - /tmp/ipfs_data:/data/ipfs
     networks:
       - backend
     deploy:
+      mode: replicated
+      update_config:
+        parallelism: 1
+        delay: "10s"
+        monitor: "5s"
       placement:
         constraints:
           - node.labels.io.zenko.type == storage
