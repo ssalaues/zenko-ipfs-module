@@ -26,7 +26,7 @@ services:
           - node.labels.io.zenko.type == storage
 
   ipfs:
-    image: ipfs/go-ipfs
+    image: ipfs/go-ipfs:latest
     # directories for volumes need to be made for persistence
     volumes:
       - /tmp/ipfs_staging:/export
@@ -38,10 +38,13 @@ services:
       - "8080:8080"
       - "8081:8081"
     # command: memcached -l 0.0.0.0 -I 10m
-    environment:
-      LISTEN_ADDR: 0.0.0.0
-    networks:
-      - backend
+#    command: ipfs daemon
+    # environment:
+    #   LISTEN_ADDR: 0.0.0.0
+    # networks:
+    #   - backend
+    #   - frontend
+    #   - frontend-dmz
     deploy:
       mode: replicated
       update_config:
