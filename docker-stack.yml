@@ -27,15 +27,16 @@ services:
 
   ipfs:
     image: ipfs/go-ipfs
-    # directories for volumes need to be made for persistence
-    volumes:
-      - /tmp/ipfs_staging:/export
-      - /tmp/ipfs_data:/data/ipfs
     ports:
       - "5001:5001"
       - "4001:4001"
+      - "4002:4002/udp"
       - "8080:8080"
+      - "8081:8081"
     # command: memcached -l 0.0.0.0 -I 10m
+    # directories for volumes need to be made for persistence
+    environment:
+      LISTEN_ADDR: 0.0.0.0
     volumes:
       - /tmp/ipfs_staging:/export
       - /tmp/ipfs_data:/data/ipfs
