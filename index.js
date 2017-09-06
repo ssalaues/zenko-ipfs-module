@@ -20,7 +20,7 @@ const logOptions = {
     "dumpLevel": "error"
 };
 
-//<==============METADATA================>
+// <==============METADATA================>
 
 const MetadataFileServer =
           require('arsenal').storage.metadata.MetadataFileServer;
@@ -51,8 +51,8 @@ var dbs = {};
 mdServer.initMetadataService = function ()
 {
     const dbService = new OrbitDBService({
-    namespace: '/MDFile/metadata',
-    logger: logger
+        namespace: '/MDFile/metadata',
+        logger: logger
     });
     this.services.push(dbService);
 
@@ -61,7 +61,8 @@ mdServer.initMetadataService = function ()
             const dbName = env.subLevel.join(SUBLEVEL_SEP);
             console.log('put', dbName, key, value, options);
             const db = orbitdb.kvstore(dbName);
-            db.put(key, value).then(() => cb(null));
+            db.put(key, value);
+            cb(null);
         },
         del: (env, key, options, cb) => {
             const dbName = env.subLevel.join(SUBLEVEL_SEP);
@@ -71,34 +72,35 @@ mdServer.initMetadataService = function ()
         get: (env, key, options, cb) => {
             const dbName = env.subLevel.join(SUBLEVEL_SEP);
             console.log('get', dbName, key, options);
-            const db = orbitdb.kvstore(dbName)
-            db.get(key, (err, value) => {
-                if (err) {
-                    if (err.notFound) {
-                        return cb(arsenal.errors.ObjNotFound);
-                    }
-                    return cb(arsenal.errors.InternalError);
-                }
-                console.log(key, value);
-                cb(null, value);
-            });
+            const db = orbitdb.eventlog(dbName);
+            console.log(db);
+            const all = db.iterator({ limit: -1 })
+                          .collect()
+                          .map((e) => e.payload.value);
+            console.log(all);
+            const value = db.get(key);
+            if (!value) {
+                return cb(arsenal.errors.ObjNotFound);
+            }
+            console.log(key, value);
+            cb(null, value);
         },
         getDiskUsage: (env, cb) => {
-            console.log('getDiskUsage',env);
+            console.log('getDiskUsage', env);
         },
     });
 
-    // dbService.registerSyncAPI({
-    //     createReadStream: (env, options) => {
-    //         const dbName = env.subLevel.join(SUBLEVEL_SEP);
-    //         console.log('createReadStream', dbName, options);
-    //         if (dbs[dbName] === undefined) {
-    //             dbs[dbName] = levelup('/tmp/' + dbName + '.json', { db: jsondown });
-    //         }
-    //     return dbs[dbName].createReadStream();
-    //     },
-    //     getUUID: () => this.readUUID(),
-    // });
+    dbService.registerSyncAPI({
+        createReadStream: (env, options) => {
+            const dbName = env.subLevel.join(SUBLEVEL_SEP);
+            console.log('createReadStream', dbName, options);
+            const db = orbitdb.kvstore(dbName);
+            options = extend({ keys: true, values: true }, options);
+            // const all = db.iterator(options).collect().map((e) => e.payload.value);
+            return new IteratorStream(db.iterator(options), options);
+        },
+        getUUID: () => this.readUUID(),
+    });
     
     console.log('Hooks installed');
 };
@@ -111,9 +113,9 @@ function hexEncode(str){
     var hex, i;
 
     var result = "";
-    for (i=0; i<str.length; i++) {
+    for (i = 0; i < str.length; i++) {
         hex = str.charCodeAt(i).toString(16);
-        result += ("000"+hex).slice(-4);
+        result += ("000" + hex).slice(-4);
     }
 
     return result;
@@ -123,7 +125,7 @@ function hexDecode(hex){
     var j;
     var hexes = hex.match(/.{1,4}/g) || [];
     var back = "";
-    for(j = 0; j<hexes.length; j++) {
+    for(j = 0; j < hexes.length; j++) {
         back += String.fromCharCode(parseInt(hexes[j], 16));
     }
 
