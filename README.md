@@ -30,10 +30,12 @@ Make sure you choose a node to be assigned persistent containers.
 `$ docker node update --label-add io.zenko.type=storage <id of chosen node>`
 
 Persistent Volumes
-![volumes]https://raw.githubusercontent.com/jeftekhari/ipfs-zenko/master/presentation/Volumes.png "Persistent Volumes")
-To make sure your data is accessible again, please add these two directories to your local machine.
-`mkdir /tmp/ipfs_staging`
-`mkdir /tmp/ipfs_data`
+
+![volumes](https://raw.githubusercontent.com/jeftekhari/ipfs-zenko/master/presentation/Volumes.png "Persistent Volumes")
+
+To make sure your data is accessible in the future, please add these two directories to your local machine.
+
+`mkdir /tmp/ipfs_staging` and `mkdir /tmp/ipfs_data`
 
 Then type:
 
